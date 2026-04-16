@@ -1,3 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Finance Tracker</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <script type="importmap">
+    {
+        "imports": {
+            "react": "https://esm.sh/react@18.2.0",
+            "react-dom/client": "https://esm.sh/react-dom@18.2.0/client",
+            "lucide-react": "https://esm.sh/lucide-react@0.344.0"
+        }
+    }
+    </script>
+
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+    <style>
+        /* Custom scrollbar and animations from your code */
+        .custom-scrollbar::-webkit-scrollbar { width: 0px; background: transparent; }
+        :root { --ease-ios: cubic-bezier(0.16, 1, 0.3, 1); }
+        @keyframes pageEnter { from { opacity: 0; transform: scale(0.99) translateY(5px); } to { opacity: 1; transform: scale(1) translateY(0); } }
+        @keyframes slideUpFade { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes staggerIn { from { opacity: 0; transform: translateX(-5px); } to { opacity: 1; transform: translateX(0); } }
+        @keyframes scaleIn { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
+        @keyframes bounceIn { 0% { transform: scale(0); opacity: 0; } 60% { transform: scale(1.1); opacity: 1; } 100% { transform: scale(1); } }
+        @keyframes fade-in { from { opacity: 0; } to { opacity: 1; } }
+        .animate-fade-in { animation: fade-in 0.3s ease-out forwards; }
+        .animate-page-enter { animation: pageEnter 0.4s var(--ease-ios) forwards; }
+        .animate-slide-up-fade { animation: slideUpFade 0.5s var(--ease-ios) backwards; }
+        .animate-stagger-in { animation: staggerIn 0.3s var(--ease-ios) forwards; }
+        .animate-scale-in { animation: scaleIn 0.4s var(--ease-ios) backwards; }
+        .animate-bounce-in { animation: bounceIn 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) backwards; }
+    </style>
+</head>
+<body class="bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white h-screen overflow-hidden">
+    
+    <div id="root"></div>
+
+    <script type="text/babel" data-type="module">
+        import { createRoot } from 'react-dom/client';
+        
+        // --- YOUR CODE STARTS HERE ---
 import React, { useState, useMemo, useEffect } from 'react';
 import { Calendar, Package, TrendingUp, Store, Tag, Filter, AlignLeft, Plus, Minus, X, Save, Download, RefreshCw, AlertCircle, Info, CheckCircle2, ChevronRight, BarChart3, ShoppingBag } from 'lucide-react';
 
@@ -602,3 +649,12 @@ export default function App() {
     </div>
   );
 }
+        // --- YOUR CODE ENDS HERE ---
+
+        // Render the component to the DOM
+        const container = document.getElementById('root');
+        const root = createRoot(container);
+        root.render(<App />);
+    </script>
+</body>
+</html>
