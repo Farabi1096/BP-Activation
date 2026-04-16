@@ -1,525 +1,603 @@
 <!DOCTYPE html>
-<html lang="bn">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>কোলগেট স্মাইল কর্ণার - ফর্ম</title>
-    <!-- Tailwind CSS for styling -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Finance Tracker</title>
+    
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Google Fonts: Noto Sans Bengali for better Bangla rendering -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&family=Noto+Sans+Bengali:wght@400;600&display=swap" rel="stylesheet">
-    <!-- Lucide Icons -->
-    <script src="https://unpkg.com/lucide@latest"></script>
+    
+    <script type="importmap">
+    {
+        "imports": {
+            "react": "https://esm.sh/react@18.2.0",
+            "react-dom/client": "https://esm.sh/react-dom@18.2.0/client",
+            "lucide-react": "https://esm.sh/lucide-react@0.344.0"
+        }
+    }
+    </script>
+
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
     <style>
-        body {
-            font-family: 'Noto Sans Bengali', 'Inter', sans-serif;
-            background-color: #f3f4f6;
-            /* Red themed gradient for Colgate */
-            background-image: 
-                radial-gradient(at 0% 0%, hsla(0, 72%, 90%, 1) 0, transparent 50%), 
-                radial-gradient(at 50% 0%, hsla(0, 80%, 95%, 1) 0, transparent 50%), 
-                radial-gradient(at 100% 0%, hsla(350, 80%, 90%, 1) 0, transparent 50%);
-            background-size: cover;
-            min-height: 100vh;
-        }
-        
-        /* Custom loading spinner animation */
-        .loader {
-            border: 3px solid #f3f3f3;
-            border-radius: 50%;
-            border-top: 3px solid #dc2626; /* Red spinner */
-            width: 24px;
-            height: 24px;
-            -webkit-animation: spin 1s linear infinite;
-            animation: spin 1s linear infinite;
-        }
-
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-
-        .input-group:focus-within label {
-            color: #dc2626; /* Red focus label */
-        }
-        
-        .input-group:focus-within i {
-            color: #dc2626; /* Red focus icon */
-        }
+        /* Custom scrollbar and animations from your code */
+        .custom-scrollbar::-webkit-scrollbar { width: 0px; background: transparent; }
+        :root { --ease-ios: cubic-bezier(0.16, 1, 0.3, 1); }
+        @keyframes pageEnter { from { opacity: 0; transform: scale(0.99) translateY(5px); } to { opacity: 1; transform: scale(1) translateY(0); } }
+        @keyframes slideUpFade { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes staggerIn { from { opacity: 0; transform: translateX(-5px); } to { opacity: 1; transform: translateX(0); } }
+        @keyframes scaleIn { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
+        @keyframes bounceIn { 0% { transform: scale(0); opacity: 0; } 60% { transform: scale(1.1); opacity: 1; } 100% { transform: scale(1); } }
+        @keyframes fade-in { from { opacity: 0; } to { opacity: 1; } }
+        .animate-fade-in { animation: fade-in 0.3s ease-out forwards; }
+        .animate-page-enter { animation: pageEnter 0.4s var(--ease-ios) forwards; }
+        .animate-slide-up-fade { animation: slideUpFade 0.5s var(--ease-ios) backwards; }
+        .animate-stagger-in { animation: staggerIn 0.3s var(--ease-ios) forwards; }
+        .animate-scale-in { animation: scaleIn 0.4s var(--ease-ios) backwards; }
+        .animate-bounce-in { animation: bounceIn 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) backwards; }
     </style>
 </head>
-<body class="flex items-center justify-center p-4">
+<body class="bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white h-screen overflow-hidden">
+    
+    <div id="root"></div>
 
-    <!-- Form Container -->
-    <div class="bg-white w-full max-w-md rounded-2xl shadow-2xl overflow-hidden transform transition-all hover:scale-[1.01] duration-300">
+    <script type="text/babel" data-type="module">
+        import { createRoot } from 'react-dom/client';
         
-        <!-- Header -->
-        <div class="bg-red-600 p-8 text-center relative overflow-hidden">
-            <!-- Decorative background shape -->
-            <div class="absolute top-0 left-0 w-full h-full bg-red-700 opacity-20 transform -skew-y-6 origin-top-left"></div>
-            
-            <h2 class="text-2xl font-bold text-white relative z-10">কোলগেট স্মাইল কর্ণার</h2>
-            <p class="text-red-100 mt-2 relative z-10 text-sm">
-                এই ফর্মটি কোলগেট পালমোলিভ এর বিশেষ প্রোগ্রাম "কোলগেট স্মাইল কর্ণার" এর জন্য নির্ধারিত দোকান গুলোর ছবি সংগ্রহের জন্য তৈরী করা হয়েছে
-            </p>
+        // --- YOUR CODE STARTS HERE ---
+import React, { useState, useMemo, useEffect } from 'react';
+import { Calendar, Package, TrendingUp, Store, Tag, Filter, AlignLeft, Plus, X, Save, Download, RefreshCw, AlertCircle, Info, CheckCircle2, ChevronRight, BarChart3, ShoppingBag } from 'lucide-react';
+
+/**
+ * CONFIGURATION
+ * Replace this with your final deployed Web App URL (ending in /exec)
+ */
+const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwPnLALIwMDyCAAzdSUWcy5dBxmZmAXnBZU0khOneYGf54fpXJHt_9UkaRQHYiRJbV1/exec';
+
+// Master list of outlets
+const outletMasterList = [
+  { code: 'D062', name: 'Gulshan-1' },
+  { code: 'D058', name: 'Uttara -3' },
+  { code: 'D109', name: 'Bashundhara, Block-G' },
+  { code: 'D007', name: 'Green Road' },
+  { code: 'D016', name: 'Uttara-11' },
+  { code: 'D111', name: 'Banasree D Block Outlet' },
+  { code: 'D075', name: 'Dhanmondi-27' },
+  { code: 'D051', name: 'Central Basabo-2' },
+  { code: 'D006', name: 'Malibag' },
+  { code: 'D071', name: 'Mirpur-10' }
+];
+
+// Master list of products with MRP
+const productMasterList = [
+  { article: '2102261', description: 'Colgate Kids Toothpaste 80gm (6-9Y)', category: 'Toothpaste', brand: 'Kids TP', mrp: 320 },
+  { article: '2102262', description: 'Colgate Kids Toothpaste 70gm (0-2Y)', category: 'Toothpaste', brand: 'Kids TP', mrp: 320 },
+  { article: '2102263', description: 'Colgate Kids Toothpaste 80gm (3-5Y)', category: 'Toothpaste', brand: 'Kids TP', mrp: 320 },
+  { article: '2102264', description: 'Colgate Kids Toothbrush (0-2Y)', category: 'Toothbrush', brand: 'Kids TBR', mrp: 65 },
+  { article: '2102303', description: 'Colgate 5+ years Extra Soft Toothbrush', category: 'Toothbrush', brand: 'Kids TBR', mrp: 160 },
+  { article: '3000302', description: 'Colgate Strong Teeth Toothpaste 100gm', category: 'Toothpaste', brand: 'CDC', mrp: 115 },
+  { article: '3000303', description: 'Colgate Strong Teeth Toothpaste 200gm', category: 'Toothpaste', brand: 'CDC', mrp: 215 },
+  { article: '3000306', description: 'Colgate Harbal Toothpaste 200 gm', category: 'Toothpaste', brand: 'Herbal', mrp: 220 },
+  { article: '3003586', description: 'Colgate Active Salt Toothpaste 200gm', category: 'Toothpaste', brand: 'CAS', mrp: 220 },
+  { article: '3003589', description: 'Colgate Active Salt Toothpaste 100gm', category: 'Toothpaste', brand: 'CAS', mrp: 120 },
+  { article: '3003721', description: 'Colgate Max Fresh BLUE Gel T.paste150g', category: 'Toothpaste', brand: 'CMF', mrp: 200 },
+  { article: '3003722', description: 'Colgate Max Fresh Red Gel T. Paste 150g', category: 'Toothpaste', brand: 'CMF', mrp: 200 },
+  { article: '3006968', description: 'Colgate Harbal Tooth Paste 100g', category: 'Toothpaste', brand: 'Herbal', mrp: 120 },
+  { article: '3007566', description: 'Colgate Max Fresh Blue Gel T.Paste 80g', category: 'Toothpaste', brand: 'CMF', mrp: 120 },
+  { article: '3007567', description: 'Colgate Total Advance T.Paste 120g', category: 'Toothpaste', brand: 'Total', mrp: 320 },
+  { article: '3007570', description: 'Colgate Plax Sensitive Mouthwash 250ml', category: 'Mouthwash', brand: 'Plax Sensitive', mrp: 372 },
+  { article: '3007571', description: 'Colgate Plax Complete Care Mouthwash 250ml', category: 'Mouthwash', brand: 'Plax Complete Care', mrp: 372 },
+  { article: '3009433', description: 'Colgate Visible White Mint T.Paste 100g', category: 'Toothpaste', brand: 'VW', mrp: 320 },
+  { article: '3013292', description: 'Colgate ZigZag Charcoal Toothbrush', category: 'Toothbrush', brand: 'ZigZag', mrp: 70 },
+  { article: '3013293', description: 'Colgate 360 Charcoal Gold Tooth Brush', category: 'Toothbrush', brand: '360 Charcoal', mrp: 212 },
+  { article: '3013294', description: 'Colgate Super Shine Soft Toothbrush', category: 'Toothbrush', brand: 'Super Shine', mrp: 160 },
+  { article: '3013295', description: 'Colgate Slim Soft Charcoal Toothbrush', category: 'Toothbrush', brand: 'Slim Soft', mrp: 160 },
+  { article: '3015074', description: 'Colgate Slim Soft T.Brush(B2 G1 Free)', category: 'Toothbrush', brand: 'Slim Soft', mrp: 160 },
+  { article: '3015075', description: 'Colgate 360 Gold T.Brush(B2 G1 Free)', category: 'Toothbrush', brand: '360 Charcoal', mrp: 212 },
+  { article: '3015079', description: 'Colgate ZigZag Toothbrush(Buy2 G1 Free)', category: 'Toothbrush', brand: 'ZigZag', mrp: 0 },
+  { article: '3015317', description: 'Colgate Swarna Vedshakti ToothPaste 200g', category: 'Toothpaste', brand: 'SVS', mrp: 320 },
+  { article: '3015320', description: 'Colgate Gentle Sensitive Toothbrush 4Pc', category: 'Toothbrush', brand: 'Sensitive 4PC', mrp: 318 },
+  { article: '3015321', description: 'Colgate Gentle Sensitive Toothbrush', category: 'Toothbrush', brand: 'Sensitive', mrp: 105 },
+  { article: '3015657', description: 'Palmolive Morning Tonic Shower Gel 750ml', category: 'Body Wash', brand: 'Morning', mrp: 1600 },
+  { article: '3015658', description: 'Palmolive Massage Shower Gel 750ml', category: 'Body Wash', brand: 'Massage', mrp: 1600 },
+  { article: '3015659', description: 'Palmolive Absolute Relx.Shower Gel 750ml', category: 'Body Wash', brand: 'Absolute', mrp: 1600 },
+  { article: '3015660', description: 'Palmolive Absolute Relx.Shower Gel 250ml', category: 'Body Wash', brand: 'Absolute', mrp: 595 },
+  { article: '3015661', description: 'Palmolive Morning Tonic Shower Gel 250ml', category: 'Body Wash', brand: 'Morning', mrp: 595 },
+  { article: '3015662', description: 'Colgate Max Fresh Tea Mouth Wash 250ml', category: 'Mouthwash', brand: 'Fresh Tea', mrp: 372 },
+  { article: '3015663', description: 'Colgate Max Fresh Tea Mouth Wash 500ml', category: 'Mouthwash', brand: 'Fresh Tea', mrp: 585 },
+  { article: '3016474', description: 'Colgate Active Salt Neem Toothpaste 200gm', category: 'Toothpaste', brand: 'CAS', mrp: 220 },
+  { article: '3016475', description: 'Colgate Sensitive Toothpaste Saver', category: 'Toothpaste', brand: 'Sensitive', mrp: 220 },
+  { article: '3017329', description: 'Palmolive Luminous O.Shower Gel 250ml In', category: 'Body Wash', brand: 'LO', mrp: 610 },
+  { article: '3017330', description: 'Colgate Charcoal Clean&Mint 120g IN', category: 'Toothpaste', brand: 'Charcoal', mrp: 320 },
+  { article: '3017331', description: 'Colgate Pain Out Dental Gel 10g IN', category: 'Toothpaste', brand: 'Pain out', mrp: 50 },
+  { article: '3017332', description: 'Colgate 360 Visible White Toothbrush In', category: 'Toothbrush', brand: 'VW', mrp: 212 },
+  { article: '3017333', description: 'Colgate 360 Whole M.Clean Toothbrush In', category: 'Toothbrush', brand: 'Whole', mrp: 212 },
+  { article: '3017334', description: 'Colgate 360 Floss Tip Toothbrush', category: 'Toothbrush', brand: 'Floss tip', mrp: 212 },
+  { article: '3017412', description: 'Colgate Visible White Toothpaste 200gm', category: 'Toothpaste', brand: 'VW', mrp: 490 },
+  { article: '3017413', description: 'Colgate Maxfresh MW Peppermint 500ml', category: 'Mouthwash', brand: 'Peppermint', mrp: 585 },
+  { article: '3017968', description: 'Colgate Visible White Mint 100g(BOGOF)', category: 'Toothpaste', brand: 'VW', mrp: 0 },
+  { article: '3018136', description: 'Colgate V.W.Peppermint S.Tooth Paste 50g', category: 'Toothpaste', brand: 'VW', mrp: 850 },
+  { article: '3018137', description: 'Colgate V.W.Peppermint S.Tooth Paste 25g', category: 'Toothpaste', brand: 'VW', mrp: 425 },
+  { article: '3018138', description: 'Colgate V.W.Aromatic Mint T.Paste 25g', category: 'Toothpaste', brand: 'VW', mrp: 450 },
+  { article: '3018139', description: 'Palmolive Lumi.Oils Shower Gel 750ml IN', category: 'Body Wash', brand: 'LO', mrp: 1600 },
+  { article: '3018596', description: 'Colgate T.Adv.Tooth Paste 120g(50% Off)', category: 'Toothpaste', brand: 'Total', mrp: 380 },
+  { article: '3020226', description: 'Colgate Gen.Enamel Tooth Brush(B2G2Free)', category: 'Toothbrush', brand: 'Sensitive', mrp: 313 },
+  { article: '3020280', description: 'Colgate Total Sen.T.Paste 150g Br.Fr.IN', category: 'Toothpaste', brand: 'Total', mrp: 330 },
+  { article: '3020281', description: 'Colgate Total CD.C T.Paste 150g Br.Fr.IN', category: 'Toothpaste', brand: 'CDC', mrp: 330 },
+  { article: '3020282', description: 'Colgate Total Adv.H.T.Paste 150g Br.Fr.I', category: 'Toothpaste', brand: 'Total', mrp: 330 },
+  { article: '3020283', description: 'Colgate Total Adv.H.T.Paste 80g IN', category: 'Toothpaste', brand: 'Total', mrp: 174 },
+  { article: '3020284', description: 'Colgate Visible W.Purple T.Paste 240g IN', category: 'Toothpaste', brand: 'VW', mrp: 478 },
+  { article: '3020285', description: 'Colgate Visible W.Purple T.Paste 120g IN', category: 'Toothpaste', brand: 'VW', mrp: 304 },
+  { article: '3020623', description: 'Colgate Active Salt Toothpaste60g(BOGOF)', category: 'Toothpaste', brand: 'CAS', mrp: 70 },
+];
+
+export default function App() {
+  // --- STATE ---
+  const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]);
+  const [selectedOutletCode, setSelectedOutletCode] = useState('ALL');
+  const [selectedCategory, setSelectedCategory] = useState('ALL');
+  const [selectedBrand, setSelectedBrand] = useState('ALL');
+  const [selectedArticle, setSelectedArticle] = useState('ALL'); 
+
+  const [salesData, setSalesData] = useState([]);
+  const [isLoadingData, setIsLoadingData] = useState(false);
+  const [syncError, setSyncError] = useState(null);
+  const [isAddOpen, setIsAddOpen] = useState(false);
+  const [lastSync, setLastSync] = useState(null);
+  
+  const [newSale, setNewSale] = useState({
+    date: selectedDate, outletCode: '', category: '', brand: '', article: '', qty: ''
+  });
+
+  // --- FETCH DATA ---
+  const fetchSheetData = async () => {
+    const cleanUrl = GOOGLE_SCRIPT_URL.trim();
+    if (!cleanUrl || !cleanUrl.includes('/exec')) {
+      setSyncError("Incorrect URL detected. Please ensure you use the WEB APP URL (ending in /exec) from the Deploy menu.");
+      return;
+    }
+
+    setIsLoadingData(true);
+    setSyncError(null);
+    
+    try {
+      const url = `${cleanUrl}?t=${Date.now()}`;
+      const response = await fetch(url, { 
+        method: 'GET',
+        redirect: 'follow'
+      });
+      
+      if (!response.ok) {
+        throw new Error(`Connection Error: ${response.status}`);
+      }
+      
+      const data = await response.json();
+      
+      if (Array.isArray(data)) {
+        setSalesData(data);
+        setLastSync(new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }));
+      } else if (data && data.status === 'error') {
+        throw new Error(data.message);
+      }
+    } catch (error) {
+      console.error("Fetch Error:", error);
+      setSyncError(error.message === 'Failed to fetch' 
+        ? "Browser Blocked Connection. Usually a CORS/Security issue." 
+        : error.message
+      );
+    } finally {
+      setIsLoadingData(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchSheetData();
+  }, []);
+
+  // --- COMPUTED VALUES ---
+  const categories = useMemo(() => [...new Set(productMasterList.map(p => p.category))], []);
+  
+  const brands = useMemo(() => {
+    return [...new Set(productMasterList
+      .filter(p => selectedCategory === 'ALL' || p.category === selectedCategory)
+      .map(p => p.brand)
+    )].sort();
+  }, [selectedCategory]);
+
+  const availableProducts = useMemo(() => {
+    return productMasterList.filter(p => 
+      (selectedCategory === 'ALL' || p.category === selectedCategory) &&
+      (selectedBrand === 'ALL' || p.brand === selectedBrand)
+    );
+  }, [selectedCategory, selectedBrand]);
+
+  const monthlyTotalValue = useMemo(() => {
+    if (!selectedDate) return 0;
+    const yearMonth = selectedDate.substring(0, 7); 
+    
+    return salesData.reduce((total, item) => {
+      if (!item.date || typeof item.date !== 'string') return total;
+      const itemYearMonth = item.date.substring(0, 7);
+      if (itemYearMonth === yearMonth) {
+        const matchesOutlet = selectedOutletCode === 'ALL' || String(item.outletCode) === selectedOutletCode;
+        if (matchesOutlet) {
+          const product = productMasterList.find(p => p.article === String(item.article));
+          const mrp = product ? product.mrp : 0;
+          return total + (Number(item.qty || 0) * mrp);
+        }
+      }
+      return total;
+    }, 0);
+  }, [salesData, selectedDate, selectedOutletCode]);
+
+  const groupedData = useMemo(() => {
+    const filtered = salesData.filter(item => {
+      const product = productMasterList.find(p => p.article === String(item.article));
+      if (!product) return false;
+
+      const matchesDate = item.date === selectedDate;
+      const matchesOutlet = selectedOutletCode === 'ALL' || String(item.outletCode) === selectedOutletCode;
+      const matchesCategory = selectedCategory === 'ALL' || product.category === selectedCategory;
+      const matchesBrand = selectedBrand === 'ALL' || product.brand === selectedBrand;
+      const matchesArticle = selectedArticle === 'ALL' || String(item.article) === selectedArticle;
+      
+      return matchesDate && matchesOutlet && matchesCategory && matchesBrand && matchesArticle;
+    });
+    
+    return filtered.reduce((acc, item) => {
+      const product = productMasterList.find(p => p.article === String(item.article));
+      const brand = product.brand;
+      const itemValue = Number(item.qty || 0) * (product.mrp || 0);
+      
+      if (!acc[brand]) {
+        acc[brand] = { totalQty: 0, totalValue: 0, items: [] };
+      }
+      acc[brand].items.push({ 
+        keyId: `${item.date}-${item.article}-${Math.random()}`, 
+        ...item, 
+        product, 
+        itemValue 
+      });
+      acc[brand].totalQty += Number(item.qty || 0);
+      acc[brand].totalValue += itemValue;
+      return acc;
+    }, {});
+  }, [salesData, selectedDate, selectedOutletCode, selectedCategory, selectedBrand, selectedArticle]);
+
+  // Form Cascading
+  const formBrands = useMemo(() => {
+    if (!newSale.category) return [];
+    return [...new Set(productMasterList.filter(p => p.category === newSale.category).map(p => p.brand))].sort();
+  }, [newSale.category]);
+
+  const formProducts = useMemo(() => {
+    if (!newSale.brand) return [];
+    return productMasterList.filter(p => p.category === newSale.category && p.brand === newSale.brand);
+  }, [newSale.category, newSale.brand]);
+
+  // --- ACTIONS ---
+  const handleAddSale = async (e) => {
+    e.preventDefault();
+    if (!newSale.date || !newSale.outletCode || !newSale.article || !newSale.qty || newSale.qty <= 0) return;
+
+    const selectedOutletName = outletMasterList.find(o => o.code === newSale.outletCode)?.name || '';
+    const selectedProduct = productMasterList.find(p => p.article === newSale.article);
+    const selectedProductName = selectedProduct?.description || '';
+    const selectedProductMRP = selectedProduct?.mrp || 0;
+    const qtyInt = parseInt(newSale.qty, 10);
+    
+    const sheetPayload = {
+      date: newSale.date,
+      outletCode: newSale.outletCode,
+      outletName: selectedOutletName,
+      category: newSale.category,
+      brand: newSale.brand,
+      productCode: newSale.article,
+      productName: selectedProductName,
+      qty: qtyInt,
+      saleValue: qtyInt * selectedProductMRP
+    };
+
+    setSalesData(prev => [...prev, {
+      date: sheetPayload.date,
+      outletCode: sheetPayload.outletCode,
+      article: sheetPayload.productCode,
+      qty: sheetPayload.qty
+    }]);
+
+    try {
+      await fetch(GOOGLE_SCRIPT_URL, {
+        method: 'POST',
+        mode: 'no-cors',
+        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+        body: JSON.stringify(sheetPayload)
+      });
+    } catch (err) {
+      console.error("Submit Error:", err);
+    }
+
+    setNewSale(prev => ({ ...prev, article: '', qty: '' }));
+    setIsAddOpen(false);
+  };
+
+  const handleExportCSV = () => {
+    const headers = ['Date', 'Outlet Code', 'Outlet Name', 'Category', 'Brand', 'Product Code', 'Product Name', 'MRP', 'Sold Qty', 'Total Value'];
+    const rows = salesData.map(item => {
+      const outlet = outletMasterList.find(o => o.code === String(item.outletCode));
+      const product = productMasterList.find(p => p.article === String(item.article));
+      const mrp = product ? product.mrp : 0;
+      return [
+        item.date, item.outletCode, outlet ? outlet.name : 'Unknown',
+        product ? product.category : 'Unknown', product ? product.brand : 'Unknown',
+        item.article, product ? product.description : 'Unknown', mrp, item.qty, Number(item.qty || 0) * mrp
+      ].map(cell => `"${cell}"`).join(','); 
+    });
+    const csvContent = [headers.join(','), ...rows].join('\n');
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = `Sales_Summary_${new Date().toISOString().split('T')[0]}.csv`;
+    link.click();
+  };
+
+  return (
+    <div className="min-h-screen bg-gray-100 flex justify-center font-sans text-gray-900">
+      <div className="w-full max-w-md bg-gray-50 flex flex-col shadow-2xl relative h-screen overflow-hidden">
+        
+        {/* Header - Clean Modern Theme */}
+        <header className="bg-white border-b border-gray-200 px-5 pt-8 pb-4 sticky top-0 z-10 shrink-0">
+          <div className="flex items-center justify-between mb-5">
+            <div>
+              <h1 className="text-xl font-bold tracking-tight text-gray-900 flex items-center gap-2">
+                <BarChart3 className="text-indigo-600" size={24} />
+                Sales Dashboard
+              </h1>
+              <div className="flex items-center gap-1.5 mt-1">
+                {lastSync ? (
+                  <CheckCircle2 size={14} className="text-emerald-500" />
+                ) : (
+                  <div className="w-2 h-2 rounded-full bg-indigo-500 animate-pulse ml-0.5"></div>
+                )}
+                <p className="text-gray-500 text-xs font-medium">
+                  {lastSync ? `Updated ${lastSync}` : 'Syncing data...'}
+                </p>
+              </div>
+            </div>
+            <div className="flex gap-2">
+              <button onClick={fetchSheetData} className="p-2 text-gray-600 bg-gray-100 rounded-full hover:bg-gray-200 hover:text-gray-900 transition-colors active:scale-95">
+                <RefreshCw size={18} className={`${isLoadingData ? 'animate-spin' : ''}`} />
+              </button>
+              <button onClick={handleExportCSV} className="p-2 text-gray-600 bg-gray-100 rounded-full hover:bg-gray-200 hover:text-gray-900 transition-colors active:scale-95">
+                <Download size={18} />
+              </button>
+            </div>
+          </div>
+
+          <div className="flex gap-3 mb-4">
+            <div className="relative flex-1">
+              <Calendar size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
+              <input type="date" value={selectedDate} onChange={(e) => setSelectedDate(e.target.value)}
+                className="w-full bg-gray-50 border border-gray-200 text-gray-800 pl-9 pr-3 py-2.5 rounded-xl text-sm font-medium focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all" />
+            </div>
+            <div className="relative flex-1">
+              <Store size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
+              <select value={selectedOutletCode} onChange={(e) => setSelectedOutletCode(e.target.value)}
+                className="w-full bg-gray-50 border border-gray-200 text-gray-800 pl-9 pr-8 py-2.5 rounded-xl text-sm font-medium focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none appearance-none transition-all truncate">
+                <option value="ALL">All Outlets</option>
+                {outletMasterList.map(o => <option key={o.code} value={o.code}>{o.name}</option>)}
+              </select>
+              <ChevronRight size={16} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none rotate-90" />
+            </div>
+          </div>
+
+          <div className="flex gap-2 overflow-x-auto no-scrollbar pb-1">
+            <select value={selectedCategory} onChange={(e) => {setSelectedCategory(e.target.value); setSelectedBrand('ALL'); setSelectedArticle('ALL');}}
+              className="bg-white border border-gray-200 text-gray-700 px-4 py-1.5 rounded-full text-xs font-semibold outline-none hover:border-indigo-300 transition-colors cursor-pointer appearance-none">
+              <option value="ALL">All Categories</option>
+              {categories.map(c => <option key={c} value={c}>{c}</option>)}
+            </select>
+            <select value={selectedBrand} onChange={(e) => {setSelectedBrand(e.target.value); setSelectedArticle('ALL');}}
+              className="bg-white border border-gray-200 text-gray-700 px-4 py-1.5 rounded-full text-xs font-semibold outline-none hover:border-indigo-300 transition-colors cursor-pointer appearance-none">
+              <option value="ALL">All Brands</option>
+              {brands.map(b => <option key={b} value={b}>{b}</option>)}
+            </select>
+          </div>
+        </header>
+
+        {/* Scrollable Main Content */}
+        <main className="flex-1 overflow-y-auto p-5 pb-28 relative">
+          
+          {isLoadingData && (
+            <div className="absolute inset-0 bg-gray-50/70 backdrop-blur-sm flex items-center justify-center z-10">
+              <div className="bg-white px-6 py-4 rounded-2xl shadow-xl flex items-center gap-3 border border-gray-100">
+                <RefreshCw size={24} className="text-indigo-600 animate-spin" />
+                <span className="text-sm font-semibold text-gray-700">Syncing...</span>
+              </div>
+            </div>
+          )}
+
+          {/* Error Message */}
+          {syncError && (
+            <div className="bg-red-50 border border-red-200 text-red-800 p-4 rounded-2xl mb-6 shadow-sm">
+              <div className="flex items-center gap-2 mb-2 font-bold text-sm text-red-700">
+                <AlertCircle size={18} /> Connection Error
+              </div>
+              <p className="text-xs font-medium mb-3 opacity-90">{syncError}</p>
+              <div className="pt-3 border-t border-red-200/60">
+                <div className="flex items-center gap-1.5 text-xs font-bold text-red-700 mb-2">
+                  <Info size={14} /> Troubleshooting
+                </div>
+                <ul className="text-xs space-y-1.5 text-red-700/80 mb-3">
+                  <li>• Use "Web App URL" (from Deploy), not the Editor URL.</li>
+                  <li>• Set "Who has access" to "Anyone".</li>
+                  <li>• Choose "New Version" when updating script.</li>
+                </ul>
+                <button onClick={fetchSheetData} className="bg-white text-red-700 px-4 py-2 rounded-lg text-xs font-bold shadow-sm hover:bg-red-50 active:scale-95 transition-all">Retry Connection</button>
+              </div>
+            </div>
+          )}
+
+          {/* Metric Card */}
+          <div className="bg-gradient-to-br from-indigo-600 to-blue-700 p-6 rounded-2xl mb-8 shadow-lg shadow-indigo-200 flex justify-between items-center text-white relative overflow-hidden">
+            <div className="absolute right-0 top-0 opacity-10 translate-x-1/4 -translate-y-1/4">
+              <TrendingUp size={120} />
+            </div>
+            <div className="relative z-10 flex flex-col">
+              <span className="text-indigo-100 text-xs font-medium uppercase tracking-wider mb-1">Total Sales (MTD)</span>
+              <div className="flex items-center gap-2 text-indigo-50 mb-1">
+                <Store size={14} />
+                <span className="text-sm font-semibold truncate max-w-[140px]">
+                  {selectedOutletCode === 'ALL' ? 'All Outlets' : outletMasterList.find(o => o.code === selectedOutletCode)?.name}
+                </span>
+              </div>
+            </div>
+            <div className="relative z-10 text-right">
+              <span className="text-3xl font-bold tracking-tight block">৳{monthlyTotalValue.toLocaleString()}</span>
+            </div>
+          </div>
+
+          <h3 className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-4 px-1">
+            Daily Breakdown
+          </h3>
+
+          {Object.keys(groupedData).length > 0 ? (
+            <div className="space-y-5">
+              {Object.entries(groupedData).map(([brand, data]) => (
+                <div key={brand} className="bg-white rounded-2xl border border-gray-200 overflow-hidden shadow-sm">
+                  <div className="bg-gray-50/80 px-4 py-3 flex justify-between items-center border-b border-gray-100">
+                    <span className="text-sm font-bold text-gray-800">{brand}</span>
+                    <span className="text-xs font-bold text-indigo-700 bg-indigo-50 px-2.5 py-1 rounded-md">
+                      ৳{data.totalValue.toLocaleString()}
+                    </span>
+                  </div>
+                  <div className="divide-y divide-gray-100">
+                    {data.items.map((item) => (
+                      <div key={item.keyId} className="p-4 flex items-center justify-between gap-3 hover:bg-gray-50/50 transition-colors">
+                        <div className="bg-gray-100 p-2.5 rounded-xl text-gray-500 shrink-0">
+                          <ShoppingBag size={18} />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-semibold text-gray-900 truncate mb-0.5" title={item.product.description}>
+                            {item.product.description}
+                          </p>
+                          <div className="flex items-center text-xs text-gray-500 font-medium">
+                            <span>MRP: ৳{item.product.mrp}</span>
+                            <span className="mx-1.5 text-gray-300">•</span>
+                            <span>{item.qty} Pcs</span>
+                          </div>
+                        </div>
+                        <div className="text-right shrink-0">
+                          <p className="text-sm font-bold text-gray-900">৳{item.itemValue.toLocaleString()}</p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="flex flex-col items-center justify-center py-16 text-gray-400">
+              <Package size={48} strokeWidth={1.5} className="mb-4 text-gray-300" />
+              <p className="text-sm font-medium">No sales recorded for this criteria.</p>
+            </div>
+          )}
+        </main>
+
+        {/* Floating Action Button */}
+        <div className="absolute bottom-6 right-6 z-20">
+          <button onClick={() => {
+              setNewSale({ ...newSale, date: selectedDate, outletCode: selectedOutletCode === 'ALL' ? '' : selectedOutletCode, category: '', brand: '', article: '', qty: '' });
+              setIsAddOpen(true);
+            }}
+            className="bg-indigo-600 text-white w-14 h-14 rounded-full shadow-lg shadow-indigo-200 flex items-center justify-center hover:bg-indigo-700 hover:scale-105 active:scale-95 transition-all">
+            <Plus size={28} strokeWidth={2.5} />
+          </button>
         </div>
 
-        <!-- Form Content -->
-        <div class="p-6 sm:p-8">
-            <form id="customForm" class="space-y-5">
-                
-                <!-- Field 1: Display Month -->
-                <div class="input-group relative">
-                    <label class="block text-sm font-semibold text-gray-700 mb-1 transition-colors">
-                        ডিসপ্লে মাস <span class="text-red-500">*</span>
-                    </label>
-                    <div class="relative">
-                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                            <i data-lucide="calendar" class="h-5 w-5 text-gray-400 transition-colors"></i>
-                        </div>
-                        <select name="display_month" required
-                            class="pl-10 block w-full rounded-lg border-gray-300 bg-gray-50 border focus:border-red-500 focus:ring-2 focus:ring-red-200 focus:bg-white text-gray-900 sm:text-sm py-3 transition-all outline-none appearance-none">
-                            <option value="" disabled selected>ডিসপ্লের নির্ধারিত মাস সিলেক্ট করুন</option>
-                            <option value="February">February</option>
-                            <option value="March">March</option>
-                        </select>
-                        <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
-                            <i data-lucide="chevron-down" class="h-4 w-4 text-gray-400"></i>
-                        </div>
-                    </div>
-                </div>
+        {/* ENTRY MODAL - Clean Bottom Sheet */}
+        {isAddOpen && (
+          <div className="absolute inset-0 z-50 flex flex-col justify-end">
+            <div className="absolute inset-0 bg-gray-900/40 backdrop-blur-sm transition-opacity animate-in fade-in" onClick={() => setIsAddOpen(false)}></div>
+            <div className="bg-white w-full rounded-t-[2rem] p-6 pt-5 shadow-2xl relative z-10 max-h-[90vh] overflow-y-auto animate-in slide-in-from-bottom-8 duration-300">
+              
+              {/* Drag Handle Indicator */}
+              <div className="w-12 h-1.5 bg-gray-200 rounded-full mx-auto mb-5"></div>
 
-                <!-- Field: Area Name -->
-                <div class="input-group relative">
-                    <label class="block text-sm font-semibold text-gray-700 mb-1 transition-colors">
-                        এরিয়া নাম <span class="text-red-500">*</span>
-                    </label>
-                    <div class="relative">
-                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                            <i data-lucide="map-pin" class="h-5 w-5 text-gray-400 transition-colors"></i>
-                        </div>
-                        <select name="area_name" id="areaSelect" required
-                            class="pl-10 block w-full rounded-lg border-gray-300 bg-gray-50 border focus:border-red-500 focus:ring-2 focus:ring-red-200 focus:bg-white text-gray-900 sm:text-sm py-3 transition-all outline-none appearance-none">
-                            <option value="" disabled selected>এরিয়া সিলেক্ট করুন</option>
-                            <option value="CTG">CTG</option>
-                            <option value="DHAKA">DHAKA</option>
-                        </select>
-                        <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
-                            <i data-lucide="chevron-down" class="h-4 w-4 text-gray-400"></i>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Field 2: Distribution Name -->
-                <div class="input-group relative">
-                    <label class="block text-sm font-semibold text-gray-700 mb-1 transition-colors">
-                        ডিস্ট্রিবিউশন নাম <span class="text-red-500">*</span>
-                    </label>
-                    <div class="relative">
-                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                            <i data-lucide="truck" class="h-5 w-5 text-gray-400 transition-colors"></i>
-                        </div>
-                        <select name="distribution_name" id="distSelect" required
-                            class="pl-10 block w-full rounded-lg border-gray-300 bg-gray-50 border focus:border-red-500 focus:ring-2 focus:ring-red-200 focus:bg-white text-gray-900 sm:text-sm py-3 transition-all outline-none appearance-none">
-                            <option value="" disabled selected>প্রথমে এরিয়া সিলেক্ট করুন</option>
-                            <!-- Options will be populated by JavaScript -->
-                        </select>
-                        <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
-                            <i data-lucide="chevron-down" class="h-4 w-4 text-gray-400"></i>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Field 3: Slab -->
-                <div class="input-group relative">
-                    <label class="block text-sm font-semibold text-gray-700 mb-1 transition-colors">
-                        স্ল্যাব <span class="text-red-500">*</span>
-                    </label>
-                    <div class="relative">
-                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                            <i data-lucide="layers" class="h-5 w-5 text-gray-400 transition-colors"></i>
-                        </div>
-                        <select name="slab" required
-                            class="pl-10 block w-full rounded-lg border-gray-300 bg-gray-50 border focus:border-red-500 focus:ring-2 focus:ring-red-200 focus:bg-white text-gray-900 sm:text-sm py-3 transition-all outline-none appearance-none">
-                            <option value="" disabled selected>দোকানটি যে স্লাবটিতে সম্মতি প্রকাশ করেছে</option>
-                            <option value="Slab 1">Slab 1</option>
-                            <option value="Slab 2">Slab 2</option>
-                        </select>
-                        <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
-                            <i data-lucide="chevron-down" class="h-4 w-4 text-gray-400"></i>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Field 4: Shop Code -->
-                <div class="input-group relative">
-                    <label class="block text-sm font-semibold text-gray-700 mb-1 transition-colors">
-                        দোকানের কোড <span class="text-red-500">*</span>
-                    </label>
-                    <div class="relative">
-                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                            <i data-lucide="hash" class="h-5 w-5 text-gray-400 transition-colors"></i>
-                        </div>
-                        <input type="text" name="shop_code" required
-                            class="pl-10 block w-full rounded-lg border-gray-300 bg-gray-50 border focus:border-red-500 focus:ring-2 focus:ring-red-200 focus:bg-white text-gray-900 sm:text-sm py-3 transition-all outline-none uppercase" 
-                            placeholder="BDC0002362">
-                    </div>
-                    <p class="text-xs text-gray-500 mt-1">উদাহরণ: BDC0002362</p>
-                </div>
-
-                <!-- Field 5: Shop Image Upload & Camera -->
-                <div class="input-group relative">
-                    <label class="block text-sm font-semibold text-gray-700 mb-1 transition-colors">
-                        ডিসপ্লের ছবি <span class="text-red-500">*</span>
-                    </label>
-                    
-                    <!-- Hidden Native Camera Input -->
-                    <input type="file" id="nativeCameraInput" accept="image/*" capture="environment" class="hidden">
-                    
-                    <!-- Hidden Manual File Input (New) -->
-                    <input type="file" id="manualFileInput" accept="image/*" class="hidden">
-
-                    <!-- Camera Trigger Button (Visible by default) -->
-                    <div id="cameraTriggerContainer">
-                        <button type="button" id="openCameraBtn" class="flex flex-row items-center justify-center w-full py-4 border-2 border-dashed border-red-300 rounded-lg bg-red-50 hover:bg-red-100 transition-colors group">
-                            <div class="p-2 rounded-full bg-white mr-3 shadow-sm group-hover:scale-110 transition-transform">
-                                <i data-lucide="camera" class="h-6 w-6 text-red-600"></i>
-                            </div>
-                            <span class="text-sm font-bold text-red-700">ক্যামেরা দিয়ে ছবি তুলুন</span>
-                        </button>
-                        
-                        <!-- Manual Upload Button (New) -->
-                        <div class="mt-3 text-center">
-                            <button type="button" id="manualUploadBtn" class="text-xs text-gray-500 hover:text-red-600 underline flex items-center justify-center mx-auto transition-colors">
-                                <i data-lucide="upload" class="h-3 w-3 mr-1"></i>
-                                অথবা গ্যালারি থেকে আপলোড করুন
-                            </button>
-                        </div>
-                    </div>
-
-                    <!-- Captured Preview Container (Hidden by default) -->
-                    <div id="previewContainer" class="hidden mt-2 relative">
-                        <div class="relative rounded-lg overflow-hidden border border-gray-300">
-                            <img id="capturedImagePreview" class="w-full h-auto block">
-                            <button type="button" id="retakeBtn" class="absolute top-2 right-2 bg-gray-900 bg-opacity-70 text-white rounded-full p-2 hover:bg-opacity-90 transition-all">
-                                <i data-lucide="x" class="h-4 w-4"></i>
-                            </button>
-                        </div>
-                        <p class="text-xs text-green-600 mt-1 flex items-center">
-                            <i data-lucide="check-circle" class="h-3 w-3 mr-1"></i> ছবি যোগ করা হয়েছে
-                        </p>
-                    </div>
-                    
-                    <!-- Hidden Canvas for processing -->
-                    <canvas id="processCanvas" class="hidden"></canvas>
-                </div>
-
-                <!-- Submit Button -->
-                <button type="submit" id="submitBtn"
-                    class="w-full flex justify-center py-3 px-4 border border-transparent rounded-lg shadow-sm text-sm font-bold text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition-all duration-200 transform hover:-translate-y-0.5">
-                    <span id="btnText">জমা দিন (Submit)</span>
-                    <div id="btnLoader" class="loader hidden"></div>
+              <div className="flex justify-between items-center mb-6">
+                <h2 className="text-xl font-bold text-gray-900">Record New Sale</h2>
+                <button onClick={() => setIsAddOpen(false)} className="p-2 text-gray-400 hover:text-gray-700 hover:bg-gray-100 rounded-full transition-colors">
+                   <X size={20}/>
                 </button>
+              </div>
 
-            </form>
-
-            <!-- Success Message (Hidden by default) -->
-            <div id="successMessage" class="hidden text-center py-4 animate-fade-in">
-                <div class="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-green-100 mb-4">
-                    <i data-lucide="check" class="h-6 w-6 text-green-600"></i>
+              <form onSubmit={handleAddSale} className="space-y-4 pb-8">
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-semibold text-gray-600 ml-1">Date</label>
+                    <input type="date" required value={newSale.date} onChange={(e) => {setNewSale({...newSale, date: e.target.value}); setSelectedDate(e.target.value);}}
+                      className="w-full bg-gray-50 border border-gray-200 px-4 py-3 rounded-xl text-sm font-medium text-gray-900 focus:bg-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all" />
+                  </div>
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-semibold text-gray-600 ml-1">Outlet</label>
+                    <select required value={newSale.outletCode} onChange={(e) => {setNewSale({...newSale, outletCode: e.target.value}); setSelectedOutletCode(e.target.value);}}
+                      className="w-full bg-gray-50 border border-gray-200 px-4 py-3 rounded-xl text-sm font-medium text-gray-900 focus:bg-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none appearance-none transition-all">
+                      <option value="" disabled>Select Outlet</option>
+                      {outletMasterList.map(o => <option key={o.code} value={o.code}>{o.name}</option>)}
+                    </select>
+                  </div>
                 </div>
-                <h3 class="text-lg font-medium text-gray-900">সফলভাবে জমা দেওয়া হয়েছে!</h3>
-                <p class="text-sm text-gray-500 mt-2">আমরা আপনার তথ্য পেয়েছি।</p>
-                <button onclick="resetForm()" class="mt-4 text-red-600 hover:text-red-800 text-sm font-medium">আরেকটি ফর্ম পূরণ করুন</button>
-            </div>
-            
-            <!-- Error Message (Hidden by default) -->
-             <div id="errorMessage" class="hidden text-center py-4 text-red-600 text-sm">
-                কিছু ভুল হয়েছে। অনুগ্রহ করে আবার চেষ্টা করুন।
-            </div>
 
-        </div>
-        
-        <!-- Footer -->
-        <div class="bg-gray-50 px-8 py-4 border-t border-gray-100">
-            <p class="text-xs text-center text-gray-400">কোলগেট স্মাইল কর্ণার প্রোগ্রাম &copy; ২০২৫</p>
-        </div>
+                <div className="space-y-1.5">
+                  <label className="text-xs font-semibold text-gray-600 ml-1">Category</label>
+                  <select required value={newSale.category} onChange={(e) => setNewSale({...newSale, category: e.target.value, brand: '', article: ''})}
+                    className="w-full bg-gray-50 border border-gray-200 px-4 py-3 rounded-xl text-sm font-medium text-gray-900 focus:bg-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none appearance-none transition-all">
+                    <option value="" disabled>Choose Category</option>
+                    {categories.map(c => <option key={c} value={c}>{c}</option>)}
+                  </select>
+                </div>
+
+                <div className="space-y-1.5">
+                  <label className="text-xs font-semibold text-gray-600 ml-1">Brand</label>
+                  <select required disabled={!newSale.category} value={newSale.brand} onChange={(e) => setNewSale({...newSale, brand: e.target.value, article: ''})}
+                    className="w-full bg-gray-50 border border-gray-200 px-4 py-3 rounded-xl text-sm font-medium text-gray-900 focus:bg-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none appearance-none disabled:opacity-60 transition-all">
+                    <option value="" disabled>Choose Brand</option>
+                    {formBrands.map(b => <option key={b} value={b}>{b}</option>)}
+                  </select>
+                </div>
+
+                <div className="space-y-1.5">
+                  <label className="text-xs font-semibold text-gray-600 ml-1">Product (SKU)</label>
+                  <select required disabled={!newSale.brand} value={newSale.article} onChange={(e) => setNewSale({...newSale, article: e.target.value})}
+                    className="w-full bg-gray-50 border border-gray-200 px-4 py-3 rounded-xl text-sm font-medium text-gray-900 focus:bg-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none appearance-none disabled:opacity-60 transition-all">
+                    <option value="" disabled>Select Product...</option>
+                    {formProducts.map(p => <option key={p.article} value={p.article}>{p.description} (৳{p.mrp})</option>)}
+                  </select>
+                </div>
+
+                <div className="space-y-1.5 pt-2">
+                  <label className="text-xs font-bold text-gray-500 uppercase tracking-wider block text-center mb-2">Quantity Sold</label>
+                  <input type="number" required min="1" value={newSale.qty} onChange={(e) => setNewSale({...newSale, qty: e.target.value})} placeholder="0"
+                    className="w-full bg-gray-50 border border-gray-200 py-4 rounded-xl text-3xl font-bold text-center text-indigo-900 focus:bg-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all placeholder:text-gray-300" />
+                </div>
+
+                <button type="submit" className="w-full bg-indigo-600 text-white font-semibold py-4 rounded-xl shadow-md shadow-indigo-200 flex items-center justify-center gap-2 mt-6 hover:bg-indigo-700 active:scale-[0.98] transition-all text-sm">
+                  <Save size={18} />
+                  Save Transaction
+                </button>
+              </form>
+            </div>
+          </div>
+        )}
+      </div>
     </div>
+  );
+}
+        // --- YOUR CODE ENDS HERE ---
 
-    <script>
-        // Initialize Icons
-        lucide.createIcons();
-
-        const form = document.getElementById('customForm');
-        const submitBtn = document.getElementById('submitBtn');
-        const btnText = document.getElementById('btnText');
-        const btnLoader = document.getElementById('btnLoader');
-        const successMessage = document.getElementById('successMessage');
-        const errorMessage = document.getElementById('errorMessage');
-        
-        // Camera & File Elements
-        const openCameraBtn = document.getElementById('openCameraBtn');
-        const nativeCameraInput = document.getElementById('nativeCameraInput');
-        const manualUploadBtn = document.getElementById('manualUploadBtn');
-        const manualFileInput = document.getElementById('manualFileInput');
-        
-        const retakeBtn = document.getElementById('retakeBtn');
-        const cameraTriggerContainer = document.getElementById('cameraTriggerContainer');
-        const previewContainer = document.getElementById('previewContainer');
-        const capturedImagePreview = document.getElementById('capturedImagePreview');
-        const processCanvas = document.getElementById('processCanvas');
-
-        let capturedImageData = null; // Stores the Base64 of captured image
-
-        // Data for Area to Distribution mapping
-        const distributionData = {
-            "CTG": [
-                "Next Associates",
-                "ARC Trading",
-                "M/S Farid Enterprise",
-                "P M Traders",
-                "Madina Traders"
-            ],
-            "DHAKA": [
-                "Takwa Enterprise",
-                "Unitrust Trading Co.",
-                "Paragon Marketing Limited",
-                "Self Tech Marketing Ltd",
-                "M/S Sanuar Enterprise",
-                "M/S Hasan Brothers Corporation",
-                "M/S Hasan Brothers Corporation 2"
-            ]
-        };
-
-        const areaSelect = document.getElementById('areaSelect');
-        const distSelect = document.getElementById('distSelect');
-
-        // Event Listener for Area Change
-        areaSelect.addEventListener('change', function() {
-            const selectedArea = this.value;
-            const distributors = distributionData[selectedArea] || [];
-            
-            distSelect.innerHTML = '<option value="" disabled selected>দোকানটি যে ডিস্ট্রিবিউশন এর অধীনে তা সিলেক্ট করুন</option>';
-            
-            distributors.forEach(dist => {
-                const option = document.createElement('option');
-                option.value = dist;
-                option.textContent = dist;
-                distSelect.appendChild(option);
-            });
-        });
-
-        // --- CAMERA & FILE FUNCTIONS ---
-
-        // 1. Open Native Camera
-        openCameraBtn.addEventListener('click', () => {
-            nativeCameraInput.click();
-        });
-        
-        // 2. Open Manual File Upload
-        manualUploadBtn.addEventListener('click', () => {
-            manualFileInput.click();
-        });
-
-        // 3. Process Image (Common Logic for both inputs)
-        const handleFileSelect = (e) => {
-            if (e.target.files && e.target.files[0]) {
-                const file = e.target.files[0];
-                const img = new Image();
-                const objectUrl = URL.createObjectURL(file);
-                
-                img.onload = () => {
-                    const ctx = processCanvas.getContext('2d');
-                    
-                    // Set canvas dimensions to match the image
-                    processCanvas.width = img.width;
-                    processCanvas.height = img.height;
-                    
-                    // Draw original image
-                    ctx.drawImage(img, 0, 0);
-                    
-                    // --- CUSTOM TIMESTAMP DESIGN ---
-                    // ONLY APPLY TIMESTAMP IF INPUT IS NOT MANUAL UPLOAD
-                    if (e.target.id !== 'manualFileInput') {
-                        applyTimestamp(ctx, processCanvas.width, processCanvas.height);
-                    }
-                    // -----------------------------
-                    
-                    // Export to Base64
-                    capturedImageData = processCanvas.toDataURL('image/jpeg', 0.8); // Compress slightly
-                    
-                    // Show Preview
-                    capturedImagePreview.src = capturedImageData;
-                    cameraTriggerContainer.classList.add('hidden');
-                    previewContainer.classList.remove('hidden');
-                    
-                    // Cleanup
-                    URL.revokeObjectURL(objectUrl);
-                };
-                
-                img.src = objectUrl;
-            }
-        };
-
-        // Attach Process Function to both inputs
-        nativeCameraInput.addEventListener('change', handleFileSelect);
-        manualFileInput.addEventListener('change', handleFileSelect);
-
-        // Timestamp Logic
-        function applyTimestamp(ctx, w, h) {
-            const now = new Date();
-            
-            // Date Format: 29-Jan-2026
-            const day = now.getDate();
-            const month = now.toLocaleString('en-US', { month: 'short' });
-            const year = now.getFullYear();
-            const dateStr = `${day}-${month}-${year}`;
-
-            // Time Format: 11:30 AM
-            const timeStr = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true }); 
-            
-            const titleStr = "Colgate Smile Corner";
-            
-            const padding = w * 0.015; 
-            
-            // Font Sizes
-            const dateFontSize = w * 0.025;
-            const timeFontSize = w * 0.025;
-            const titleFontSize = w * 0.028;
-            
-            const font = "sans-serif";
-            const lineHeight = 1.3;
-            const totalTextHeight = (dateFontSize + timeFontSize + titleFontSize) * lineHeight;
-            
-            // Box Position (Bottom Left with margin)
-            const margin = w * 0.02;
-            const startX = margin + padding;
-            let currentY = h - totalTextHeight - margin;
-            
-            // Set Stroke (Outline)
-            ctx.strokeStyle = 'black';
-            ctx.lineWidth = w * 0.004; 
-            ctx.lineJoin = 'round';
-            ctx.textBaseline = 'top';
-
-            // 1. Date
-            ctx.font = `bold ${dateFontSize}px ${font}`;
-            ctx.strokeText(dateStr, startX, currentY);
-            ctx.fillStyle = '#FFFFFF';
-            ctx.fillText(dateStr, startX, currentY);
-            currentY += dateFontSize * lineHeight;
-
-            // 2. Time
-            ctx.font = `bold ${timeFontSize}px ${font}`;
-            ctx.strokeText(timeStr, startX, currentY);
-            ctx.fillStyle = '#FFFFFF';
-            ctx.fillText(timeStr, startX, currentY);
-            currentY += timeFontSize * lineHeight;
-            
-            // 3. Title
-            ctx.font = `bold ${titleFontSize}px ${font}`;
-            ctx.strokeStyle = 'white'; 
-            ctx.lineWidth = w * 0.006; 
-            ctx.strokeText(titleStr, startX, currentY);
-            
-            ctx.fillStyle = '#dc2626'; // Colgate Red
-            ctx.fillText(titleStr, startX, currentY);
-        }
-
-        // Retake Photo
-        retakeBtn.addEventListener('click', () => {
-            capturedImageData = null;
-            nativeCameraInput.value = ''; // Reset input
-            manualFileInput.value = '';   // Reset manual input
-            previewContainer.classList.add('hidden');
-            cameraTriggerContainer.classList.remove('hidden');
-        });
-
-        // IMPORTANT: The URL you provided
-        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbx9WuBOgKRgfol24Def7xKGwUHu6zfJPhdpuwqlE58yWgraHM7uXKpJlCmwa4HCKqNW/exec';
-
-        form.addEventListener('submit', async e => {
-            e.preventDefault();
-            
-            // Validation: Check if image is captured
-            if (!capturedImageData) {
-                alert("অনুগ্রহ করে ক্যামেরা দিয়ে ছবি তুলুন অথবা আপলোড করুন।");
-                return;
-            }
-
-            // UI Loading State
-            btnText.classList.add('hidden');
-            btnLoader.classList.remove('hidden');
-            submitBtn.disabled = true;
-            submitBtn.classList.add('opacity-75', 'cursor-not-allowed');
-
-            // Collect Data
-            const formData = new FormData(form);
-            const data = Object.fromEntries(formData.entries());
-
-            // Handle Image Data
-            try {
-                // Use captured image
-                data.shop_image = {
-                    name: `capture_${Date.now()}.jpg`,
-                    type: 'image/jpeg',
-                    data: capturedImageData
-                };
-            } catch (error) {
-                console.error("Error processing image:", error);
-                showError();
-                return;
-            }
-
-            // --- REAL SUBMISSION MODE ---
-            fetch(SCRIPT_URL, {
-                method: 'POST',
-                body: JSON.stringify(data),
-                mode: 'no-cors' 
-            })
-            .then(() => {
-                showSuccess();
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                showError();
-            });
-        });
-
-        function showSuccess() {
-            form.classList.add('hidden');
-            successMessage.classList.remove('hidden');
-            btnLoader.classList.add('hidden');
-            btnText.classList.remove('hidden');
-        }
-
-        function showError() {
-            errorMessage.classList.remove('hidden');
-            btnLoader.classList.add('hidden');
-            btnText.classList.remove('hidden');
-            submitBtn.disabled = false;
-            submitBtn.classList.remove('opacity-75', 'cursor-not-allowed');
-        }
-
-        function resetForm() {
-            form.reset();
-            successMessage.classList.add('hidden');
-            form.classList.remove('hidden');
-            submitBtn.disabled = false;
-            submitBtn.classList.remove('opacity-75', 'cursor-not-allowed');
-            errorMessage.classList.add('hidden');
-            
-            // Reset dropdowns
-            distSelect.innerHTML = '<option value="" disabled selected>প্রথমে এরিয়া সিলেক্ট করুন</option>';
-            
-            // Reset Camera UI
-            capturedImageData = null;
-            nativeCameraInput.value = '';
-            manualFileInput.value = '';
-            previewContainer.classList.add('hidden');
-            cameraTriggerContainer.classList.remove('hidden');
-        }
+        // Render the component to the DOM
+        const container = document.getElementById('root');
+        const root = createRoot(container);
+        root.render(<App />);
     </script>
 </body>
 </html>
-
