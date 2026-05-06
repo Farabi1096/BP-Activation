@@ -46,7 +46,7 @@
         
         // --- YOUR CODE STARTS HERE ---
 import React, { useState, useMemo, useEffect } from 'react';
-import { Calendar, Package, TrendingUp, Store, Tag, Filter, AlignLeft, Plus, Minus, X, Save, Download, RefreshCw, AlertCircle, Info, CheckCircle2, ChevronRight, BarChart3, ShoppingBag } from 'lucide-react';
+import { Calendar, Package, TrendingUp, Store, Tag, Filter, AlignLeft, Plus, Minus, X, Save, Download, RefreshCw, AlertCircle, Info, CheckCircle2, ChevronRight, BarChart3, ShoppingBag, User } from 'lucide-react';
 
 /**
  * CONFIGURATION
@@ -56,16 +56,16 @@ const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwPnLALIwMDyC
 
 // Master list of outlets
 const outletMasterList = [
-  { code: 'D062', name: 'Gulshan-1', target: 152308 },
-  { code: 'D058', name: 'Uttara -3', target: 112640 },
-  { code: 'D109', name: 'Bashundhara, Block-G', target: 119462 },
-  { code: 'D007', name: 'Green Road', target: 112569 },
-  { code: 'D016', name: 'Uttara-11', target: 110263 },
-  { code: 'D111', name: 'Banasree D Block Outlet', target: 89988 },
-  { code: 'D075', name: 'Dhanmondi-27', target: 70784 },
-  { code: 'D051', name: 'Central Basabo-2', target: 70933 },
-  { code: 'D006', name: 'Malibag', target: 71171 },
-  { code: 'D071', name: 'Mirpur-10', target: 71888 }
+  { code: 'D062', name: 'Gulshan-1', bpName: 'Afrin', target: 146216 },
+  { code: 'D058', name: 'Uttara -3', bpName: 'Mohona', target: 112640 },
+  { code: 'D109', name: 'Bashundhara, Block-G', bpName: 'Mim', target: 105678 },
+  { code: 'D007', name: 'Green Road', bpName: 'Tonni', target: 103563 },
+  { code: 'D016', name: 'Uttara-11', bpName: 'Mohona', target: 101443 },
+  { code: 'D111', name: 'Banasree D Block Outlet', bpName: 'Mim', target: 80346 },
+  { code: 'D075', name: 'Dhanmondi-27', bpName: 'Moon', target: 67835 },
+  { code: 'D051', name: 'Central Basabo-2', bpName: 'Akhi', target: 50000 },
+  { code: 'D006', name: 'Malibag', bpName: 'Akhi', target: 63263 },
+  { code: 'D071', name: 'Mirpur-10', bpName: 'Tonni', target: 66358 }
 ];
 
 // Master list of products with MRP
@@ -132,8 +132,19 @@ const productMasterList = [
 ];
 
 export default function App() {
+  // Current month bounds for date picker restriction
+  const today = new Date();
+  const currentYear = today.getFullYear();
+  const currentMonthNum = today.getMonth();
+  const currentMonthPrefix = `${currentYear}-${String(currentMonthNum + 1).padStart(2, '0')}`;
+  
+  const firstDayOfMonth = `${currentYear}-${String(currentMonthNum + 1).padStart(2, '0')}-01`;
+  const lastDayObj = new Date(currentYear, currentMonthNum + 1, 0);
+  const lastDayOfMonth = `${currentYear}-${String(currentMonthNum + 1).padStart(2, '0')}-${String(lastDayObj.getDate()).padStart(2, '0')}`;
+
   // --- STATE ---
   const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]);
+  const [selectedBpName, setSelectedBpName] = useState('ALL');
   const [selectedOutletCode, setSelectedOutletCode] = useState('ALL');
   const [selectedCategory, setSelectedCategory] = useState('ALL');
   const [selectedBrand, setSelectedBrand] = useState('ALL');
@@ -174,7 +185,9 @@ export default function App() {
       const data = await response.json();
       
       if (Array.isArray(data)) {
-        setSalesData(data);
+        // STRICT FILTER: Discard any data that is not from the current month
+        const currentMonthData = data.filter(item => String(item.date).startsWith(currentMonthPrefix));
+        setSalesData(currentMonthData);
         setLastSync(new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }));
       } else if (data && data.status === 'error') {
         throw new Error(data.message);
@@ -195,6 +208,13 @@ export default function App() {
   }, []);
 
   // --- COMPUTED VALUES ---
+  const bpNames = useMemo(() => [...new Set(outletMasterList.map(o => o.bpName))].sort(), []);
+
+  const filteredOutlets = useMemo(() => {
+    if (selectedBpName === 'ALL') return outletMasterList;
+    return outletMasterList.filter(o => o.bpName === selectedBpName);
+  }, [selectedBpName]);
+
   const categories = useMemo(() => [...new Set(productMasterList.map(p => p.category))], []);
   
   const brands = useMemo(() => {
@@ -212,31 +232,28 @@ export default function App() {
   }, [selectedCategory, selectedBrand]);
 
   const monthlyTotalValue = useMemo(() => {
-    if (!selectedDate) return 0;
-    const yearMonth = selectedDate.substring(0, 7); 
-    
     return salesData.reduce((total, item) => {
-      if (!item.date || typeof item.date !== 'string') return total;
-      const itemYearMonth = item.date.substring(0, 7);
-      if (itemYearMonth === yearMonth) {
-        const matchesOutlet = selectedOutletCode === 'ALL' || String(item.outletCode) === selectedOutletCode;
-        if (matchesOutlet) {
-          const product = productMasterList.find(p => p.article === String(item.article));
-          const mrp = product ? product.mrp : 0;
-          return total + (Number(item.qty || 0) * mrp);
-        }
+      const itemOutlet = outletMasterList.find(o => o.code === String(item.outletCode));
+      const itemBpName = itemOutlet ? itemOutlet.bpName : '';
+
+      const matchesBp = selectedBpName === 'ALL' || itemBpName === selectedBpName;
+      const matchesOutlet = selectedOutletCode === 'ALL' || String(item.outletCode) === selectedOutletCode;
+      
+      if (matchesBp && matchesOutlet) {
+        const product = productMasterList.find(p => p.article === String(item.article));
+        const mrp = product ? product.mrp : 0;
+        return total + (Number(item.qty || 0) * mrp);
       }
       return total;
     }, 0);
-  }, [salesData, selectedDate, selectedOutletCode]);
+  }, [salesData, selectedOutletCode, selectedBpName]);
 
   const currentTarget = useMemo(() => {
-    if (selectedOutletCode === 'ALL') {
-      return outletMasterList.reduce((sum, outlet) => sum + outlet.target, 0);
-    }
-    const outlet = outletMasterList.find(o => o.code === selectedOutletCode);
-    return outlet ? outlet.target : 0;
-  }, [selectedOutletCode]);
+    return outletMasterList
+      .filter(o => selectedBpName === 'ALL' || o.bpName === selectedBpName)
+      .filter(o => selectedOutletCode === 'ALL' || o.code === selectedOutletCode)
+      .reduce((sum, outlet) => sum + outlet.target, 0);
+  }, [selectedOutletCode, selectedBpName]);
 
   const achievementPercent = currentTarget > 0 ? ((monthlyTotalValue / currentTarget) * 100).toFixed(1) : 0;
   const balance = currentTarget - monthlyTotalValue;
@@ -246,13 +263,17 @@ export default function App() {
       const product = productMasterList.find(p => p.article === String(item.article));
       if (!product) return false;
 
-      const matchesDate = item.date === selectedDate;
+      const itemOutlet = outletMasterList.find(o => o.code === String(item.outletCode));
+      const itemBpName = itemOutlet ? itemOutlet.bpName : '';
+
+      const matchesDate = item.date === selectedDate; // DAILY Breakdown matching specific selected day
+      const matchesBp = selectedBpName === 'ALL' || itemBpName === selectedBpName;
       const matchesOutlet = selectedOutletCode === 'ALL' || String(item.outletCode) === selectedOutletCode;
       const matchesCategory = selectedCategory === 'ALL' || product.category === selectedCategory;
       const matchesBrand = selectedBrand === 'ALL' || product.brand === selectedBrand;
       const matchesArticle = selectedArticle === 'ALL' || String(item.article) === selectedArticle;
       
-      return matchesDate && matchesOutlet && matchesCategory && matchesBrand && matchesArticle;
+      return matchesDate && matchesBp && matchesOutlet && matchesCategory && matchesBrand && matchesArticle;
     });
     
     return filtered.reduce((acc, item) => {
@@ -263,17 +284,19 @@ export default function App() {
       if (!acc[brand]) {
         acc[brand] = { totalQty: 0, totalValue: 0, items: [] };
       }
+      
       acc[brand].items.push({ 
         keyId: `${item.date}-${item.article}-${Math.random()}`, 
         ...item, 
         product, 
         itemValue 
       });
+      
       acc[brand].totalQty += Number(item.qty || 0);
       acc[brand].totalValue += itemValue;
       return acc;
     }, {});
-  }, [salesData, selectedDate, selectedOutletCode, selectedCategory, selectedBrand, selectedArticle]);
+  }, [salesData, selectedDate, selectedOutletCode, selectedBpName, selectedCategory, selectedBrand, selectedArticle]);
 
   // Form Cascading
   const formBrands = useMemo(() => {
@@ -347,7 +370,7 @@ export default function App() {
     const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
     const link = document.createElement('a');
     link.href = URL.createObjectURL(blob);
-    link.download = `Sales_Summary_${new Date().toISOString().split('T')[0]}.csv`;
+    link.download = `Sales_Summary_${currentMonthPrefix}.csv`;
     link.click();
   };
 
@@ -385,18 +408,29 @@ export default function App() {
             </div>
           </div>
 
-          <div className="flex gap-3 mb-4">
-            <div className="relative flex-1">
-              <Calendar size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
-              <input type="date" value={selectedDate} onChange={(e) => setSelectedDate(e.target.value)}
-                className="w-full bg-gray-50 border border-gray-200 text-gray-800 pl-9 pr-3 py-2.5 rounded-xl text-sm font-medium focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all" />
+          <div className="flex flex-col gap-3 mb-4">
+            <div className="flex gap-3">
+              <div className="relative flex-1">
+                <Calendar size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
+                <input type="date" min={firstDayOfMonth} max={lastDayOfMonth} value={selectedDate} onChange={(e) => setSelectedDate(e.target.value)}
+                  className="w-full bg-gray-50 border border-gray-200 text-gray-800 pl-9 pr-3 py-2.5 rounded-xl text-sm font-medium focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all" />
+              </div>
+              <div className="relative flex-1">
+                <User size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
+                <select value={selectedBpName} onChange={(e) => {setSelectedBpName(e.target.value); setSelectedOutletCode('ALL');}}
+                  className="w-full bg-gray-50 border border-gray-200 text-gray-800 pl-9 pr-8 py-2.5 rounded-xl text-sm font-medium focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none appearance-none transition-all truncate">
+                  <option value="ALL">All BPs</option>
+                  {bpNames.map(bp => <option key={bp} value={bp}>{bp}</option>)}
+                </select>
+                <ChevronRight size={16} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none rotate-90" />
+              </div>
             </div>
-            <div className="relative flex-1">
+            <div className="relative w-full">
               <Store size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
               <select value={selectedOutletCode} onChange={(e) => setSelectedOutletCode(e.target.value)}
                 className="w-full bg-gray-50 border border-gray-200 text-gray-800 pl-9 pr-8 py-2.5 rounded-xl text-sm font-medium focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none appearance-none transition-all truncate">
                 <option value="ALL">All Outlets</option>
-                {outletMasterList.map(o => <option key={o.code} value={o.code}>{o.name}</option>)}
+                {filteredOutlets.map(o => <option key={o.code} value={o.code}>{o.name} ({o.bpName})</option>)}
               </select>
               <ChevronRight size={16} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none rotate-90" />
             </div>
@@ -461,7 +495,12 @@ export default function App() {
                 <div className="flex items-center gap-1.5 text-indigo-50 mb-1">
                   <Store size={14} />
                   <span className="text-sm font-semibold truncate max-w-[140px]">
-                    {selectedOutletCode === 'ALL' ? 'All Outlets' : outletMasterList.find(o => o.code === selectedOutletCode)?.name}
+                    {selectedOutletCode !== 'ALL' 
+                      ? `${outletMasterList.find(o => o.code === selectedOutletCode)?.name} (${outletMasterList.find(o => o.code === selectedOutletCode)?.bpName})`
+                      : selectedBpName !== 'ALL' 
+                        ? `BP: ${selectedBpName}` 
+                        : 'All Outlets'
+                    }
                   </span>
                 </div>
               </div>
@@ -537,7 +576,7 @@ export default function App() {
           ) : (
             <div className="flex flex-col items-center justify-center py-16 text-gray-400">
               <Package size={48} strokeWidth={1.5} className="mb-4 text-gray-300" />
-              <p className="text-sm font-medium">No sales recorded for this criteria.</p>
+              <p className="text-sm font-medium">No sales recorded for this day.</p>
             </div>
           )}
         </main>
@@ -574,7 +613,7 @@ export default function App() {
                 <div className="grid grid-cols-2 gap-3">
                   <div className="space-y-1.5">
                     <label className="text-xs font-semibold text-gray-600 ml-1">Date</label>
-                    <input type="date" required value={newSale.date} onChange={(e) => {setNewSale({...newSale, date: e.target.value}); setSelectedDate(e.target.value);}}
+                    <input type="date" min={firstDayOfMonth} max={lastDayOfMonth} required value={newSale.date} onChange={(e) => {setNewSale({...newSale, date: e.target.value}); setSelectedDate(e.target.value);}}
                       className="w-full bg-gray-50 border border-gray-200 px-4 py-3 rounded-xl text-sm font-medium text-gray-900 focus:bg-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all" />
                   </div>
                   <div className="space-y-1.5">
@@ -582,7 +621,7 @@ export default function App() {
                     <select required value={newSale.outletCode} onChange={(e) => {setNewSale({...newSale, outletCode: e.target.value}); setSelectedOutletCode(e.target.value);}}
                       className="w-full bg-gray-50 border border-gray-200 px-4 py-3 rounded-xl text-sm font-medium text-gray-900 focus:bg-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none appearance-none transition-all">
                       <option value="" disabled>Select Outlet</option>
-                      {outletMasterList.map(o => <option key={o.code} value={o.code}>{o.name}</option>)}
+                      {outletMasterList.map(o => <option key={o.code} value={o.code}>{o.name} ({o.bpName})</option>)}
                     </select>
                   </div>
                 </div>
