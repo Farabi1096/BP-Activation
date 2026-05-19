@@ -1,52 +1,5 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Finance Tracker</title>
-    
-    <script src="https://cdn.tailwindcss.com"></script>
-    
-    <script type="importmap">
-    {
-        "imports": {
-            "react": "https://esm.sh/react@18.2.0",
-            "react-dom/client": "https://esm.sh/react-dom@18.2.0/client",
-            "lucide-react": "https://esm.sh/lucide-react@0.344.0"
-        }
-    }
-    </script>
-
-    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-
-    <style>
-        /* Custom scrollbar and animations from your code */
-        .custom-scrollbar::-webkit-scrollbar { width: 0px; background: transparent; }
-        :root { --ease-ios: cubic-bezier(0.16, 1, 0.3, 1); }
-        @keyframes pageEnter { from { opacity: 0; transform: scale(0.99) translateY(5px); } to { opacity: 1; transform: scale(1) translateY(0); } }
-        @keyframes slideUpFade { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-        @keyframes staggerIn { from { opacity: 0; transform: translateX(-5px); } to { opacity: 1; transform: translateX(0); } }
-        @keyframes scaleIn { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
-        @keyframes bounceIn { 0% { transform: scale(0); opacity: 0; } 60% { transform: scale(1.1); opacity: 1; } 100% { transform: scale(1); } }
-        @keyframes fade-in { from { opacity: 0; } to { opacity: 1; } }
-        .animate-fade-in { animation: fade-in 0.3s ease-out forwards; }
-        .animate-page-enter { animation: pageEnter 0.4s var(--ease-ios) forwards; }
-        .animate-slide-up-fade { animation: slideUpFade 0.5s var(--ease-ios) backwards; }
-        .animate-stagger-in { animation: staggerIn 0.3s var(--ease-ios) forwards; }
-        .animate-scale-in { animation: scaleIn 0.4s var(--ease-ios) backwards; }
-        .animate-bounce-in { animation: bounceIn 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) backwards; }
-    </style>
-</head>
-<body class="bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white h-screen overflow-hidden">
-    
-    <div id="root"></div>
-
-    <script type="text/babel" data-type="module">
-        import { createRoot } from 'react-dom/client';
-        
-        // --- YOUR CODE STARTS HERE ---
 import React, { useState, useMemo, useEffect } from 'react';
-import { Calendar, Package, TrendingUp, Store, Tag, Filter, AlignLeft, Plus, Minus, X, Save, Download, RefreshCw, AlertCircle, Info, CheckCircle2, ChevronRight, BarChart3, ShoppingBag, User } from 'lucide-react';
+import { Calendar, Package, TrendingUp, Store, Tag, Filter, AlignLeft, Plus, Minus, X, Save, Download, RefreshCw, AlertCircle, Info, CheckCircle2, ChevronRight, BarChart3, ShoppingBag, User, PieChart } from 'lucide-react';
 
 /**
  * CONFIGURATION
@@ -63,7 +16,7 @@ const outletMasterList = [
   { code: 'D016', name: 'Uttara-11', bpName: 'Mohona', target: 101443 },
   { code: 'D111', name: 'Banasree D Block Outlet', bpName: 'Mim', target: 80346 },
   { code: 'D075', name: 'Dhanmondi-27', bpName: 'Moon', target: 67835 },
-  { code: 'D051', name: 'Central Basabo-2', bpName: 'Akhi', target: 50000 },
+  { code: 'F696', name: 'Baro Moghbazar Outlet', bpName: 'Akhi', target: 50000 },
   { code: 'D006', name: 'Malibag', bpName: 'Akhi', target: 63263 },
   { code: 'D071', name: 'Mirpur-10', bpName: 'Tonni', target: 66358 }
 ];
@@ -257,6 +210,42 @@ export default function App() {
 
   const achievementPercent = currentTarget > 0 ? ((monthlyTotalValue / currentTarget) * 100).toFixed(1) : 0;
   const balance = currentTarget - monthlyTotalValue;
+
+  const categoryContribution = useMemo(() => {
+    const predefinedCategories = [
+      { id: 'Toothpaste', shortName: 'T.Paste' },
+      { id: 'Toothbrush', shortName: 'T.Brush' },
+      { id: 'Body Wash', shortName: 'B.Wash' },
+      { id: 'Mouthwash', shortName: 'M.Wash' }
+    ];
+    
+    const categoryTotals = { 'Toothpaste': 0, 'Toothbrush': 0, 'Body Wash': 0, 'Mouthwash': 0 };
+
+    salesData.forEach(item => {
+      const itemOutlet = outletMasterList.find(o => o.code === String(item.outletCode));
+      const itemBpName = itemOutlet ? itemOutlet.bpName : '';
+
+      const matchesBp = selectedBpName === 'ALL' || itemBpName === selectedBpName;
+      const matchesOutlet = selectedOutletCode === 'ALL' || String(item.outletCode) === selectedOutletCode;
+      
+      if (matchesBp && matchesOutlet) {
+        const product = productMasterList.find(p => p.article === String(item.article));
+        if (product && categoryTotals[product.category] !== undefined) {
+          const val = Number(item.qty || 0) * (product.mrp || 0);
+          categoryTotals[product.category] += val;
+        }
+      }
+    });
+
+    return predefinedCategories.map(cat => {
+      const val = categoryTotals[cat.id];
+      return {
+        ...cat,
+        value: val,
+        percentage: monthlyTotalValue > 0 ? Math.round((val / monthlyTotalValue) * 100) : 0
+      };
+    });
+  }, [salesData, selectedOutletCode, selectedBpName, monthlyTotalValue]);
 
   const groupedData = useMemo(() => {
     const filtered = salesData.filter(item => {
@@ -532,6 +521,36 @@ export default function App() {
                  </span>
               </div>
             </div>
+
+            {/* 4 Circle Category Contribution */}
+            <div className="relative z-10 pt-4 mt-4 border-t border-indigo-400/30">
+              <span className="text-indigo-200 text-[10px] font-bold uppercase tracking-wider block mb-3 text-center">Category Cont. %</span>
+              <div className="flex justify-between items-center gap-1">
+                {categoryContribution.map(cat => (
+                  <div key={cat.id} className="flex flex-col items-center">
+                    <div className="relative w-12 h-12 flex items-center justify-center mb-1.5">
+                      <svg className="w-full h-full transform -rotate-90">
+                        <circle cx="24" cy="24" r="20" className="text-indigo-800/40" strokeWidth="4" stroke="currentColor" fill="transparent" />
+                        <circle 
+                          cx="24" cy="24" r="20" 
+                          className="text-emerald-300 drop-shadow-md" 
+                          strokeWidth="4" 
+                          strokeDasharray="125.66" 
+                          strokeDashoffset={125.66 - (cat.percentage / 100) * 125.66} 
+                          strokeLinecap="round" 
+                          stroke="currentColor" 
+                          fill="transparent" 
+                        />
+                      </svg>
+                      <span className="absolute text-[11px] font-bold text-white">{cat.percentage}%</span>
+                    </div>
+                    <span className="text-[9px] font-semibold text-indigo-100 uppercase tracking-tight text-center">
+                      {cat.shortName}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
           </div>
 
           <h3 className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-4 px-1">
@@ -688,12 +707,3 @@ export default function App() {
     </div>
   );
 }
-        // --- YOUR CODE ENDS HERE ---
-
-        // Render the component to the DOM
-        const container = document.getElementById('root');
-        const root = createRoot(container);
-        root.render(<App />);
-    </script>
-</body>
-</html>
